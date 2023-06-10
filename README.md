@@ -29,3 +29,10 @@ Load hassanblend (https://huggingface.co/hassanblend/HassanBlend1.5.1.2) in stab
 
 ## Demo
 Feel free to test it out in the #sd-art channel in TheBloke's Discord (https://discord.gg/F7jfGhaGRX)
+
+## Screenshots
+<img src="https://raw.githubusercontent.com/CyberTimon/Stable-Diffusion-Discord-Bot/main/examples/example1.png" alt="App Screenshot" width="50%">
+
+<img src="https://raw.githubusercontent.com/CyberTimon/Stable-Diffusion-Discord-Bot/main/examples/example2.png" alt="App Screenshot" width="50%">
+
+<img src="https://raw.githubusercontent.com/CyberTimon/Stable-Diffusion-Discord-Bot/main/examples/example3.png" alt="App Screenshot" width="50%">
