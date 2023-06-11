@@ -1,0 +1,8 @@
+transformers
+Pillow
+requests
+py-cord
+torch
+torch
+torchaudio
+python-dotenv

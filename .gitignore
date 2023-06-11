@@ -1,0 +1,5 @@
+.venv/**
+credentials/**
+*.pyc
+.env.deploy
+.env.development
