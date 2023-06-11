@@ -234,6 +234,7 @@ async def generate_random(
   ctx: discord.ApplicationContext,
   orientation: discord.Option(str, choices=['Square', 'Portrait', 'Landscape'], default='Square', description='In which orientation should the image be?'),
 ):
+    global total_requests
     if ctx.guild is None:
         await ctx.respond("This command cannot be used in direct messages.")
         return
@@ -252,7 +253,7 @@ async def generate_random(
         title_prompt2 = title_prompt2[:150] + "..."
     embed = discord.Embed(
             title="Generated 2 random images using these settings:",
-            description=f"Prompt (Left): `{title_prompt}`\nPrompt (Right): `{title_prompt2}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`",
+            description=f"Prompt (Left): `{title_prompt}`\nPrompt (Right): `{title_prompt2}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`",
             color=discord.Colour.blurple(),
         )
     generated_image, image_id = await imagegen(prompt, style, orientation, negative_prompt, seed)
@@ -278,6 +279,7 @@ async def generate(
   orientation: discord.Option(str, choices=['Square', 'Portrait', 'Landscape'], default='Square', description='In which orientation should the image be?'),
   negative_prompt: discord.Option(str, description='What do you want to avoid?', default='')
 ):
+    global total_requests
     if ctx.guild is None:
         await ctx.respond("This command cannot be used in direct messages.")
         return
@@ -293,7 +295,7 @@ async def generate(
         title_prompt = title_prompt[:150] + "..."
     embed = discord.Embed(
             title="Prompt: " + title_prompt,
-            description=f"Style: `{style}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`",
+            description=f"Style: `{style}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`",
             color=discord.Colour.blurple(),
         )
     await ctx.respond("Generating 2 images...", ephemeral=True, delete_after=3)  
