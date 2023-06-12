@@ -16,7 +16,13 @@ It has many features:
 First you need to install all the python dependencies:
 `pip install -r requirements.txt`
 
-Then you can install set the settings variables in bot.py and paste there your discord bot api key. (You first have to create a discord bot at discord.com/developers/ but I won't explain this here. Just make sure that the bot has access to commands and can type messages / embed things. Don't forget to add the bot to your discord using the generated link in the devoloper portal with the correct rights, but I think that should be clear)
+### Bot settings variables 
+The bot settings are defined in:
+- `.env.development` : settings for development and testing 
+- `.env.deploy` : settings for deployed bot
+(copy the `.env.template` file for initial definition)
+
+Most default settings can be kept, but you **must specify** the `BOT_KEY` which you obtain from the discord bot app setup. (You first have to create a discord bot at discord.com/developers/ but I won't explain this here. Just make sure that the bot has access to commands and can type messages / embed things. Don't forget to add the bot to your discord using the generated link in the devoloper portal with the correct rights, but I think that should be clear.  General instructions can be found on [RealPython: how to make a discort bot](https://realpython.com/how-to-make-a-discord-bot-python/))
 
 Finally, start the bot using `python3 bot.py` - after this you can use the bot using /generate or /generate_random. 
 
