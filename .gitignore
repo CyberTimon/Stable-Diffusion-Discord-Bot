@@ -4,3 +4,4 @@ GeneratedImages/*.png
 *.pyc
 .env.deploy
 .env.development
+current_requests.txt

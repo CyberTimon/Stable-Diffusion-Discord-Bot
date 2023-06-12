@@ -48,8 +48,15 @@ characters = string.ascii_letters + string.digits
 tokenizer = GPT2Tokenizer.from_pretrained('distilgpt2')
 tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 model = GPT2LMHeadModel.from_pretrained('FredZhang7/distilgpt2-stable-diffusion-v2')
-with open('current_requests.txt', 'r') as file:
-    total_requests = int(file.read())
+
+# keep track of total requests, make this file outside of git control
+if os.path.exists('current_requests.txt'):
+    with open('current_requests.txt', 'r') as file:
+        total_requests = int(file.read())
+else:
+    total_requests = 0
+    with open('current_requests.txt', 'w') as file:
+        file.write(str(total_requests))
     
 # The single upscale button after generating a variation
 class UpscaleOnlyView(discord.ui.View):
