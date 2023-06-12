@@ -9,6 +9,7 @@ import random
 import base64
 import io
 import os
+import sys
 from dotenv import load_dotenv
 
 # load environment settings
@@ -19,8 +20,8 @@ if not os.path.exists(dotenv_path):
     dotenv_path = os.path.join(os.getcwd(), '.env.deploy')
 
 load_dotenv(dotenv_path=dotenv_path, override=True)
-SD_HOST = os.environ.get('HOST', 'localhost')
-SD_PORT = int(os.environ.get('PORT', '7680'))
+SD_HOST = os.environ.get('SD_HOST', 'localhost')
+SD_PORT = int(os.environ.get('SD_PORT', '7860'))
 SD_VARIATION_STRENGTH = float(os.environ.get('SD_VARIATION_STRENGTH', '0.065'))
 SD_UPSCALER = os.environ.get('SD_UPSCALER','R-ESRGAN 4x+')
 BOT_KEY = os.environ.get('BOT_KEY', None)
@@ -30,6 +31,14 @@ webui_url = f"http://{SD_HOST}:{SD_PORT}"   # URL/Port of the A1111 webui
 upscaler_model = SD_UPSCALER                # How much should the varied image varie from the original?
 variation_strength = SD_VARIATION_STRENGTH  # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
 discord_bot_key = BOT_KEY                   # Set this to the discord bot key from the bot you created on the discord devoloper page.
+
+# upfront checks
+assert BOT_KEY is not None, "Invalid specification: BOT_KEY must be defined"
+try:
+    res = requests.get(webui_url)
+except requests.ConnectionError as e:
+    print("Failed to connect to SD host; possibly incorrect URL:\n", e) 
+    sys.exit(1) 
 
 # Initialize
 bot = discord.Bot()
