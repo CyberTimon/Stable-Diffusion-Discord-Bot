@@ -3,6 +3,6 @@ Pillow
 requests
 py-cord
 torch
-torch
+torchvision
 torchaudio
 python-dotenv

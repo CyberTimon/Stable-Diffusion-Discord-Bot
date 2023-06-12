@@ -14,7 +14,7 @@ It has many features:
 
 ## How to use this
 First you need to install all the python dependencies:
-`pip install transformers Pillow requests py-cord`
+`pip install -r requirements.txt`
 
 Then you can install set the settings variables in bot.py and paste there your discord bot api key. (You first have to create a discord bot at discord.com/developers/ but I won't explain this here. Just make sure that the bot has access to commands and can type messages / embed things. Don't forget to add the bot to your discord using the generated link in the devoloper portal with the correct rights, but I think that should be clear)
 
