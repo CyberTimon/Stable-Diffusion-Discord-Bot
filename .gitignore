@@ -1,5 +1,6 @@
 .venv/**
 credentials/**
+GeneratedImages/*.png
 *.pyc
 .env.deploy
 .env.development
