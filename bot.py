@@ -9,12 +9,36 @@ import random
 import base64
 import io
 import os
+import sys
+from dotenv import load_dotenv
 
-# Settings:
-webui_url = "http://localhost:7680" # URL/Port of the A1111 webui
-upscaler_model = "R-ESRGAN 4x+" # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
-variation_strenght = 0.065 # How much should the varied image varie from the original?
-discord_bot_key = "Your discord bot key here" # Set this to the discord bot key from the bot you created on the discord devoloper page.
+# load environment settings
+# first use .env.development if found, else use .env.deploy
+# NOTE: These file are NOT versioned by git, since they contain your local settings
+dotenv_path = os.getenv('ENVIRONMENT_FILE', os.path.join(os.getcwd(), '.env.development'))
+if not os.path.exists(dotenv_path):
+    dotenv_path = os.path.join(os.getcwd(), '.env.deploy')
+
+load_dotenv(dotenv_path=dotenv_path, override=True)
+SD_HOST = os.environ.get('SD_HOST', 'localhost')
+SD_PORT = int(os.environ.get('SD_PORT', '7860'))
+SD_VARIATION_STRENGTH = float(os.environ.get('SD_VARIATION_STRENGTH', '0.065'))
+SD_UPSCALER = os.environ.get('SD_UPSCALER','R-ESRGAN 4x+')
+BOT_KEY = os.environ.get('BOT_KEY', None)
+
+# Apply Settings:
+webui_url = f"http://{SD_HOST}:{SD_PORT}"   # URL/Port of the A1111 webui
+upscaler_model = SD_UPSCALER                # How much should the varied image varie from the original?
+variation_strength = SD_VARIATION_STRENGTH  # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
+discord_bot_key = BOT_KEY                   # Set this to the discord bot key from the bot you created on the discord devoloper page.
+
+# upfront checks
+assert BOT_KEY is not None, "Invalid specification: BOT_KEY must be defined"
+try:
+    res = requests.get(webui_url)
+except requests.ConnectionError as e:
+    print("Failed to connect to SD host; possibly incorrect URL:\n", e) 
+    sys.exit(1) 
 
 # Initialize
 bot = discord.Bot()
@@ -24,8 +48,15 @@ characters = string.ascii_letters + string.digits
 tokenizer = GPT2Tokenizer.from_pretrained('distilgpt2')
 tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 model = GPT2LMHeadModel.from_pretrained('FredZhang7/distilgpt2-stable-diffusion-v2')
-with open('current_requests.txt', 'r') as file:
-    total_requests = int(file.read())
+
+# keep track of total requests, make this file outside of git control
+if os.path.exists('current_requests.txt'):
+    with open('current_requests.txt', 'r') as file:
+        total_requests = int(file.read())
+else:
+    total_requests = 0
+    with open('current_requests.txt', 'w') as file:
+        file.write(str(total_requests))
     
 # The single upscale button after generating a variation
 class UpscaleOnlyView(discord.ui.View):
@@ -129,14 +160,14 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
     global total_requests
     total_requests = total_requests + 1
     global webui_url
-    global variation_strenght
+    global variation_strength
     currentTime = datetime.now()   
     width, height = make_orientation(orientation)
     prompt, negativeprompt = make_prompt(prompt, style, original_negativeprompt)
     if variation:
-        variation_strenght = variation_strenght
+        variation_strength = variation_strength
     else:
-        variation_strenght = 0
+        variation_strength = 0
     payload = {
         "prompt": prompt,
         'negative_prompt': negativeprompt,
@@ -148,7 +179,7 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
         'seed': seed,
         'tiling': False,
         'restore_faces': True,
-        'subseed_strength': variation_strenght
+        'subseed_strength': variation_strength
     }
     response = requests.post(url=f'{webui_url}/sdapi/v1/txt2img', json=payload)
     r = response.json()  
