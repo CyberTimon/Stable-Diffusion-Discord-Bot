@@ -10,7 +10,7 @@ It has many features:
 - Beautiful images with simple prompts thanks to the prompt templates
 - Works with the A1111 - no need for 2 stable diffusion installations
 - Blocks direct messages 
-- Generate random images using a finetuned GPT 2 which runs on cpu (Thanks to: FredZhang7/distilgpt2-stable-diffusion-v2)
+- Generate random image prompts using a finetuned GPT 2 which runs on cpu (Thanks to: FredZhang7/distilgpt2-stable-diffusion-v2)
 
 ## How to use this
 First you need to install all the python dependencies:
