@@ -25,6 +25,8 @@ SD_PORT = int(os.environ.get('SD_PORT', '7860'))
 SD_VARIATION_STRENGTH = float(os.environ.get('SD_VARIATION_STRENGTH', '0.065'))
 SD_UPSCALER = os.environ.get('SD_UPSCALER','R-ESRGAN 4x+')
 BOT_KEY = os.environ.get('BOT_KEY', None)
+generate_command = os.environ.get('BOT_GENERATE_COMMAND', 'generate')
+generate_random_command = os.environ.get('BOT_GENERATE_RANDOM_COMMAND', 'generate_random')
 
 # Apply Settings:
 webui_url = f"http://{SD_HOST}:{SD_PORT}"   # URL/Port of the A1111 webui
@@ -147,14 +149,17 @@ class MyView(discord.ui.View):
     @discord.ui.button(label="Retry", row=2, style=discord.ButtonStyle.primary, emoji="🔄")
     async def button_retry(self, button, interaction):
         await interaction.response.send_message(f"Regenerating the image using the same settings...", ephemeral=True, delete_after=4)
-        retried_image, image_id = await imagegen(self.prompt, self.style, self.orientation, self.negative_prompt, random.randint(0, 1000000000000))
-        retried_image2, image_id2 = await imagegen(self.prompt, self.style, self.orientation, self.negative_prompt, random.randint(0, 1000000000000))
+        retried_image, image_id = await imagegen(self.prompt, self.style, self.orientation, self.negative_prompt, random_seed())
+        retried_image2, image_id2 = await imagegen(self.prompt, self.style, self.orientation, self.negative_prompt, random_seed())
         retried_images = [
             discord.File(retried_image),
             discord.File(retried_image2),
         ]
         message = await interaction.followup.send(f"Retried These Generations:", files=retried_images, view=UpscaleOnlyView2(f"GeneratedImages/{image_id}.png", f"GeneratedImages/{image_id2}.png"))
         
+def random_seed():
+    return random.randint(0, 1000000000000)
+
 # This is the function the generate the image and send the request to A1111.
 async def imagegen(prompt, style, orientation, original_negativeprompt, seed, variation=False):
     global total_requests
@@ -245,7 +250,7 @@ async def generate_prompt():
     return str(tokenizer.decode(output[0], skip_special_tokens=True) + ", colorful, sharp focus")
     
 # Command for the 2 random images
-@bot.command(description="Generates 2 random images")
+@bot.command(name=generate_random_command, description="Generates 2 random images")
 async def generate_random(
   ctx: discord.ApplicationContext,
   orientation: discord.Option(str, choices=['Square', 'Portrait', 'Landscape'], default='Square', description='In which orientation should the image be?'),
@@ -258,8 +263,8 @@ async def generate_random(
     prompt = await generate_prompt()
     prompt2 = await generate_prompt()
     style = "No Style Preset"
-    seed = random.randint(0, 1000000000000)
-    seed2 = random.randint(0, 1000000000000)
+    seed = random_seed()
+    seed2 = random_seed()
     negative_prompt = "Default"
     title_prompt = prompt
     if len(title_prompt) > 150:
@@ -278,8 +283,6 @@ async def generate_random(
         discord.File(generated_image),
         discord.File(generated_image2),
     ]
-    with open(generated_image, 'rb') as f:
-        image_bytes = f.read()
     if len(prompt) > 100:
         prompt = prompt[:100]
     message = await ctx.respond(f"<@{ctx.author.id}>'s Random Generations:", files=generated_images, view=MyView(prompt, style, orientation, negative_prompt, seed, generated_image, image_id, seed2, generated_image2, image_id2), embed=embed)
@@ -287,7 +290,7 @@ async def generate_random(
     await message.add_reaction('👎')
 
 # Command for the normal 2 image generation
-@bot.command(description="Generates 2 image")
+@bot.command(name=generate_command, description="Generates 2 image")
 async def generate(
   ctx: discord.ApplicationContext,
   prompt: discord.Option(str, description='What do you want to generate?'),
@@ -299,8 +302,8 @@ async def generate(
     if ctx.guild is None:
         await ctx.respond("This command cannot be used in direct messages.")
         return
-    seed = random.randint(0, 1000000000000)
-    seed2 = random.randint(0, 1000000000000)
+    seed = random_seed()
+    seed2 = random_seed()
     banned_words = ["nude", "naked", "nsfw", "porn"] # The most professional nsfw filter lol
     if not negative_prompt:
         negative_prompt = "Default"
