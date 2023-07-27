@@ -166,7 +166,6 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
     total_requests = total_requests + 1
     global webui_url
     global variation_strength
-    currentTime = datetime.now()   
     width, height = make_orientation(orientation)
     prompt, negativeprompt = make_prompt(prompt, style, original_negativeprompt)
     if variation:
@@ -201,7 +200,7 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
         image_id = ''.join(random.choice(characters) for i in range(24))
         file_path = f"GeneratedImages/{image_id}.png"
         image.save(file_path, pnginfo=pnginfo)
-        print ("Generated Image:", file_path)
+        print (f"{datetime.now().strftime('%x %X')} Generated Image:", file_path)
         print (total_requests)
         with open('current_requests.txt', 'w') as file:
             file.write(str(total_requests))
@@ -230,7 +229,7 @@ async def upscale(image):
     file_path = file_path.replace('.png', '')
     file_path = f"{file_path}-upscaled.png"
     image_upscaled.save(file_path)
-    print ("Upscaled Image:", file_path)
+    print (f"{datetime.now().strftime('%x %X')} Upscaled Image:", file_path)
     print (total_requests)
     with open('current_requests.txt', 'w') as file:
         file.write(str(total_requests))
