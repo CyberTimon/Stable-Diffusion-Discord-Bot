@@ -12,6 +12,8 @@ import os
 import sys
 from dotenv import load_dotenv
 
+DEFAULT_SD_UPSCALER = "4x_NMKD-Siax_200k"
+
 # load environment settings
 # first use .env.development if found, else use .env.deploy
 # NOTE: These file are NOT versioned by git, since they contain your local settings
@@ -20,19 +22,16 @@ if not os.path.exists(dotenv_path):
     dotenv_path = os.path.join(os.getcwd(), '.env.deploy')
 
 load_dotenv(dotenv_path=dotenv_path, override=True)
-SD_HOST = os.environ.get('SD_HOST', 'localhost')
-SD_PORT = int(os.environ.get('SD_PORT', '7860'))
-SD_VARIATION_STRENGTH = float(os.environ.get('SD_VARIATION_STRENGTH', '0.065'))
-SD_UPSCALER = os.environ.get('SD_UPSCALER','R-ESRGAN 4x+')
-BOT_KEY = os.environ.get('BOT_KEY', None)
-generate_command = os.environ.get('BOT_GENERATE_COMMAND', 'generate')
-generate_random_command = os.environ.get('BOT_GENERATE_RANDOM_COMMAND', 'generate_random')
+host = os.environ.get('SD_HOST', 'localhost')                                 # URL of the SD A1111 webui
+port = int(os.environ.get('SD_PORT', '7860'))                                 # Port of the SD A1111 webui 
+variation_strength = float(os.environ.get('SD_VARIATION_STRENGTH', '0.065'))  # How much should the varied image vary from the original? (variation strength for subseeds)
+upscaler_model = os.environ.get('SD_UPSCALER',DEFAULT_SD_UPSCALER)            # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
+discord_bot_key = os.environ.get('BOT_KEY', None)                             # Set this to the discord bot key from the bot you created on the discord devoloper page.
+generate_command = os.environ.get('BOT_GENERATE_COMMAND', 'generate')         # Discord slash command to generate from prompt 
+generate_random_command = os.environ.get('BOT_GENERATE_RANDOM_COMMAND', 'generate_random')  # Discord slash command to generate random
 
 # Apply Settings:
-webui_url = f"http://{SD_HOST}:{SD_PORT}"   # URL/Port of the A1111 webui
-upscaler_model = SD_UPSCALER                # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
-variation_strength = SD_VARIATION_STRENGTH  # How much should the varied image vary from the original?
-discord_bot_key = BOT_KEY                   # Set this to the discord bot key from the bot you created on the discord devoloper page.
+webui_url = f"http://{host}:{port}"   # URL/Port of the A1111 webui
 
 # helper functions
 def random_seed():
@@ -41,8 +40,15 @@ def random_seed():
 def current_time_str():
     return datetime.now().strftime('%x %X')
 
+# clean screen
+os.system('clear')
+print(f"{current_time_str()}: Started App")
+
 # upfront checks
-assert BOT_KEY is not None, "Invalid specification: BOT_KEY must be defined"
+# check for bot key
+assert discord_bot_key is not None, "Invalid specification: BOT_KEY must be defined"
+
+# check SD URL
 try:
     res = requests.get(webui_url)
     if res.status_code == 200:
@@ -54,9 +60,25 @@ except requests.ConnectionError as e:
     print(f"{current_time_str()}: Failed to connect to SD host; possibly incorrect URL:\n", e) 
     sys.exit(1) 
 
+# check for upscaler name
+try:
+    res = requests.get(f"{webui_url}/sdapi/v1/upscalers")
+    if res.status_code == 200:
+        upscalers = [r['name'] for r in res.json()]
+        if upscaler_model in upscalers: 
+            print(f"{current_time_str()}: Using upscaler model: '{upscaler_model}'")
+        else:
+            print(f"{current_time_str()}: Specified upscaler model '{upscaler_model}' not found, using '{DEFAULT_SD_UPSCALER}'")
+            upscaler_model = DEFAULT_SD_UPSCALER
+    else:
+        print(f"{current_time_str()}: Did not receive correct response from SD host: {webui_url}\nResponse code={res.status_code}")
+        sys.exit(1) 
+except requests.ConnectionError as e:
+    print(f"{current_time_str()}: Failed to connect to SD host; possibly incorrect URL:\n", e) 
+    sys.exit(1) 
+
 # Initialize
 bot = discord.Bot()
-os.system('clear')
 print (f"{current_time_str()}: Bot is running")
 characters = string.ascii_letters + string.digits
 tokenizer = GPT2Tokenizer.from_pretrained('distilgpt2')
@@ -235,6 +257,7 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
 # Sends the upscale request to A1111
 async def upscale(image):  
     global total_requests
+    global upscaler_model
     total_requests = total_requests + 1
     with open(image, 'rb') as image_file:
         image_b64 = base64.b64encode(image_file.read()).decode()
@@ -244,7 +267,7 @@ async def upscale(image):
       "gfpgan_visibility": 0.6,
       "codeformer_visibility": 0,
       "codeformer_weight": 0,
-      "upscaler_1": "4x_NMKD-Siax_200k",
+      "upscaler_1": upscaler_model, 
       "image": image_b64
     }
     response_upscaled = requests.post(url=f'{webui_url}/sdapi/v1/extra-single-image', json=upscale_payload)
