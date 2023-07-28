@@ -34,18 +34,30 @@ upscaler_model = SD_UPSCALER                # Name of the upscaler. I recommend 
 variation_strength = SD_VARIATION_STRENGTH  # How much should the varied image vary from the original?
 discord_bot_key = BOT_KEY                   # Set this to the discord bot key from the bot you created on the discord devoloper page.
 
+# helper functions
+def random_seed():
+    return random.randint(0, 1_000_000_000_000)
+
+def current_time_str():
+    return datetime.now().strftime('%x %X')
+
 # upfront checks
 assert BOT_KEY is not None, "Invalid specification: BOT_KEY must be defined"
 try:
     res = requests.get(webui_url)
+    if res.status_code == 200:
+        print(f"{current_time_str()}: Connected to SD host on URL: {webui_url}")
+    else:
+        print(f"{current_time_str()}: Did not receive correct response from SD host: {webui_url}\nResponse code={res.status_code}")
+        sys.exit(1) 
 except requests.ConnectionError as e:
-    print("Failed to connect to SD host; possibly incorrect URL:\n", e) 
+    print(f"{current_time_str()}: Failed to connect to SD host; possibly incorrect URL:\n", e) 
     sys.exit(1) 
 
 # Initialize
 bot = discord.Bot()
 os.system('clear')
-print ("Bot is running")
+print (f"{current_time_str()}: Bot is running")
 characters = string.ascii_letters + string.digits
 tokenizer = GPT2Tokenizer.from_pretrained('distilgpt2')
 tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -175,9 +187,6 @@ class MyView(discord.ui.View):
             view=UpscaleOnlyView2(f"GeneratedImages/{image_id}.png", f"GeneratedImages/{image_id2}.png")
         )
         
-def random_seed():
-    return random.randint(0, 1000000000000)
-
 # This is the function the generate the image and send the request to A1111.
 async def imagegen(prompt, style, orientation, original_negativeprompt, seed, variation=False):
     global total_requests
@@ -218,7 +227,7 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
         image_id = ''.join(random.choice(characters) for _ in range(24))
         file_path = f"GeneratedImages/{image_id}.png"
         image.save(file_path, pnginfo=pnginfo)
-        print (f"{datetime.now().strftime('%x %X')} Generated Image {total_requests}:", file_path)
+        print (f"{current_time_str()}: Generated Image {total_requests}:", file_path)
         with open('current_requests.txt', 'w') as file:
             file.write(str(total_requests))
         return file_path, image_id
@@ -246,7 +255,7 @@ async def upscale(image):
     file_path = file_path.replace('.png', '')
     file_path = f"{file_path}-upscaled.png"
     image_upscaled.save(file_path)
-    print (f"{datetime.now().strftime('%x %X')} Upscaled Image {total_requests}:", file_path)
+    print (f"{current_time_str()}: Upscaled Image {total_requests}:", file_path)
     with open('current_requests.txt', 'w') as file:
         file.write(str(total_requests))
     return file_path
