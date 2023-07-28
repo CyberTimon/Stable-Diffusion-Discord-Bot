@@ -30,8 +30,8 @@ generate_random_command = os.environ.get('BOT_GENERATE_RANDOM_COMMAND', 'generat
 
 # Apply Settings:
 webui_url = f"http://{SD_HOST}:{SD_PORT}"   # URL/Port of the A1111 webui
-upscaler_model = SD_UPSCALER                # How much should the varied image varie from the original?
-variation_strength = SD_VARIATION_STRENGTH  # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
+upscaler_model = SD_UPSCALER                # Name of the upscaler. I recommend "4x_NMKD-Siax_200k" but you have to download it manually.
+variation_strength = SD_VARIATION_STRENGTH  # How much should the varied image vary from the original?
 discord_bot_key = BOT_KEY                   # Set this to the discord bot key from the bot you created on the discord devoloper page.
 
 # upfront checks
@@ -136,7 +136,14 @@ class MyView(discord.ui.View):
         variation_image, image_id = await imagegen(self.prompt, self.style, self.orientation, self.negative_prompt, self.seed, variation=True)
         with open(variation_image, 'rb') as f:
             image_bytes = f.read()
-        message = await interaction.followup.send(f"Varied This Generation:", file=discord.File(io.BytesIO(image_bytes), f'{self.prompt}-{self.style}-{image_id}-varied.png'), view=UpscaleOnlyView(f"GeneratedImages/{image_id}.png"))
+        message = await interaction.followup.send(
+            f"Varied This Generation:", 
+            file=discord.File(
+                io.BytesIO(image_bytes), 
+                f'{self.prompt}-{self.style}-{image_id}-varied.png'
+            ), 
+            view=UpscaleOnlyView(f"GeneratedImages/{image_id}.png")
+        )
         
     @discord.ui.button(label="Variation R", row=1, style=discord.ButtonStyle.primary, emoji="🌱") 
     async def button_variation2(self, button, interaction):
@@ -144,7 +151,14 @@ class MyView(discord.ui.View):
         variation_image, image_id = await imagegen(self.prompt, self.style, self.orientation, self.negative_prompt, self.seed1, variation=True)
         with open(variation_image, 'rb') as f:
             image_bytes = f.read()
-        message = await interaction.followup.send(f"Varied This Generation:", file=discord.File(io.BytesIO(image_bytes), f'{self.prompt}-{self.style}-{image_id}-varied.png'), view=UpscaleOnlyView(f"GeneratedImages/{image_id}.png"))
+        message = await interaction.followup.send(
+            f"Varied This Generation:", 
+            file=discord.File(
+                io.BytesIO(image_bytes), 
+                f'{self.prompt}-{self.style}-{image_id}-varied.png'
+            ), 
+            view=UpscaleOnlyView(f"GeneratedImages/{image_id}.png")
+        )
         
     @discord.ui.button(label="Retry", row=2, style=discord.ButtonStyle.primary, emoji="🔄")
     async def button_retry(self, button, interaction):
@@ -155,7 +169,11 @@ class MyView(discord.ui.View):
             discord.File(retried_image),
             discord.File(retried_image2),
         ]
-        message = await interaction.followup.send(f"Retried These Generations:", files=retried_images, view=UpscaleOnlyView2(f"GeneratedImages/{image_id}.png", f"GeneratedImages/{image_id2}.png"))
+        message = await interaction.followup.send(
+            f"Retried These Generations:", 
+            files=retried_images, 
+            view=UpscaleOnlyView2(f"GeneratedImages/{image_id}.png", f"GeneratedImages/{image_id2}.png")
+        )
         
 def random_seed():
     return random.randint(0, 1000000000000)
@@ -169,9 +187,9 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
     width, height = make_orientation(orientation)
     prompt, negativeprompt = make_prompt(prompt, style, original_negativeprompt)
     if variation:
-        variation_strength = variation_strength
+        var_strength = variation_strength
     else:
-        variation_strength = 0
+        var_strength = 0
     payload = {
         "prompt": prompt,
         'negative_prompt': negativeprompt,
@@ -183,7 +201,7 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
         'seed': seed,
         'tiling': False,
         'restore_faces': True,
-        'subseed_strength': variation_strength
+        'subseed_strength': var_strength
     }
     response = requests.post(url=f'{webui_url}/sdapi/v1/txt2img', json=payload)
     r = response.json()  
@@ -197,11 +215,10 @@ async def imagegen(prompt, style, orientation, original_negativeprompt, seed, va
         pnginfo = PngImagePlugin.PngInfo()
         pnginfo.add_text("parameters", response2.json().get("info"))
         global characters
-        image_id = ''.join(random.choice(characters) for i in range(24))
+        image_id = ''.join(random.choice(characters) for _ in range(24))
         file_path = f"GeneratedImages/{image_id}.png"
         image.save(file_path, pnginfo=pnginfo)
-        print (f"{datetime.now().strftime('%x %X')} Generated Image:", file_path)
-        print (total_requests)
+        print (f"{datetime.now().strftime('%x %X')} Generated Image {total_requests}:", file_path)
         with open('current_requests.txt', 'w') as file:
             file.write(str(total_requests))
         return file_path, image_id
@@ -229,8 +246,7 @@ async def upscale(image):
     file_path = file_path.replace('.png', '')
     file_path = f"{file_path}-upscaled.png"
     image_upscaled.save(file_path)
-    print (f"{datetime.now().strftime('%x %X')} Upscaled Image:", file_path)
-    print (total_requests)
+    print (f"{datetime.now().strftime('%x %X')} Upscaled Image {total_requests}:", file_path)
     with open('current_requests.txt', 'w') as file:
         file.write(str(total_requests))
     return file_path
@@ -312,10 +328,10 @@ async def generate(
     if len(title_prompt) > 150:
         title_prompt = title_prompt[:150] + "..."
     embed = discord.Embed(
-            title="Prompt: " + title_prompt,
-            description=f"Style: `{style}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`",
-            color=discord.Colour.blurple(),
-        )
+        title="Prompt: " + title_prompt,
+        description=f"Style: `{style}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`",
+        color=discord.Colour.blurple(),
+    )
     await ctx.respond("Generating 2 images...", ephemeral=True, delete_after=3)  
     generated_image, image_id = await imagegen(prompt, style, orientation, negative_prompt, seed)
     generated_image2, image_id2 = await imagegen(prompt, style, orientation, negative_prompt, seed2)
