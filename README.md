@@ -22,11 +22,11 @@ The bot settings are defined in:
 - `.env.deploy` : settings for deployed bot
 (copy the `.env.template` file for initial definition)
 
-Most default settings can be kept, but you **must specify** the `BOT_KEY` which you obtain from the discord bot app setup. (You first have to create a discord bot at discord.com/developers/ but I won't explain this here. Just make sure that the bot has access to commands and can type messages / embed things. Don't forget to add the bot to your discord using the generated link in the devoloper portal with the correct rights, but I think that should be clear.  General instructions can be found on [RealPython: how to make a discort bot](https://realpython.com/how-to-make-a-discord-bot-python/))
+Most default settings can be kept, but you **must specify** the `BOT_KEY` which you obtain from the discord bot app setup. (You first have to create a discord bot at discord.com/developers/ but I won't explain this here. Just make sure that the bot has access to commands and can type messages / embed things. Don't forget to add the bot to your discord using the generated link in the devoloper portal with the correct rights, but I think that should be clear.  General instructions can be found on [RealPython: how to make a Discord bot](https://realpython.com/how-to-make-a-discord-bot-python/))
 
-Finally, start the bot using `python3 bot.py` - after this you can use the bot using /generate or /generate_random. 
+Finally, start the bot using `python3 bot.py` - after this you can use the bot using `/generate` or `/generate_random` (alternate command names can be specified in `.env.deploy` file). 
 
-To change / add styles, add the style to the command array in bot.py and add the preprompt, afterprompt and negative_prompt to prompts.py. There you can also find the prompts for the other styles.
+To change / add styles, add the style to the command array in bot.py and add the preprompt, afterprompt and negative_prompt to `prompts.py`. There you can also find the prompts for the other styles.
 
 Since this is my first Discord bot, things could probably be solved in a simpler/better way. So feel free to submit a pull request to fix some issues.
 
