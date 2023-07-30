@@ -321,7 +321,7 @@ async def generate_random(
         title_prompt2 = title_prompt2[:150] + "..."
     embed = discord.Embed(
             title="Generated 2 random images using these settings:",
-            description=f"Prompt (Left): `{title_prompt}`\nPrompt (Right): `{title_prompt2}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`",
+            description=f"Prompt (Left): `{title_prompt}`\nPrompt (Right): `{title_prompt2}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`\n\nWant to generate your own image? Type your prompt and style after `/{generate_command}`!",
             color=discord.Colour.blurple(),
         )
     generated_image, image_id = await imagegen(prompt, style, orientation, negative_prompt, seed)
@@ -361,7 +361,7 @@ async def generate(
         title_prompt = title_prompt[:150] + "..."
     embed = discord.Embed(
         title="Prompt: " + title_prompt,
-        description=f"Style: `{style}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`",
+        description=f"Style: `{style}`\nOrientation: `{orientation}`\nSeed (Left): `{seed}`\nSeed (Right): `{seed2}`\nNegative Prompt: `{negative_prompt}`\nTotal generated images: `{total_requests}`\n\nWant to generate your own image? Type your prompt and style after `/{generate_command}`!",
         color=discord.Colour.blurple(),
     )
     await ctx.respond("Generating 2 images...", ephemeral=True, delete_after=3)  
